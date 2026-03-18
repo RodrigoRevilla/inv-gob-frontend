@@ -1,1 +1,106 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-crema font-sans text-guinda-900 antialiased;
+    min-height: 100vh;
+  }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-crema-dark; }
+  ::-webkit-scrollbar-thumb { @apply bg-guinda-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-guinda-500; }
+}
+
+@layer components {
+
+  .zapotec-band {
+    height: 36px;
+    background-image: url('/header.png');
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+  }
+
+  .btn-primary {
+    @apply bg-guinda-700 hover:bg-guinda-600 active:bg-guinda-800
+           text-white font-semibold px-5 py-2.5 rounded-lg
+           transition-all duration-150 shadow-sm
+           focus:outline-none focus:ring-2 focus:ring-guinda-400 focus:ring-offset-2
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-guinda-50 border border-crema-border
+           text-guinda-700 hover:text-guinda-800 font-medium px-5 py-2.5 rounded-lg
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-guinda-300;
+  }
+
+  .btn-danger {
+    @apply bg-danger hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-150;
+  }
+
+  .input-gov {
+    @apply w-full bg-white border border-crema-border text-guinda-900
+           placeholder-guinda-300 rounded-lg px-4 py-2.5
+           focus:outline-none focus:ring-2 focus:ring-guinda-400 focus:border-transparent
+           transition-all duration-150 font-sans;
+  }
+
+  .card {
+    @apply bg-white border border-crema-border rounded-xl p-6 shadow-card;
+  }
+
+  .card-sm {
+    @apply bg-white border border-crema-border rounded-lg p-4 shadow-card;
+  }
+
+  .stat-card { @apply card-sm flex flex-col gap-1; }
+  .stat-value { @apply text-2xl font-semibold font-mono; }
+  .stat-label { @apply text-xs text-guinda-400 uppercase tracking-widest; }
+
+  .badge-coincide {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold
+           bg-success-bg border border-success-border text-success-DEFAULT;
+  }
+  .badge-encontrado {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold
+           bg-warning-bg border border-warning-border text-warning-DEFAULT;
+  }
+  .badge-no_en_catalogo {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold
+           bg-danger-bg border border-danger-border text-danger-DEFAULT;
+  }
+
+  .inv-number {
+    @apply font-mono text-sm tracking-wider text-guinda-700 font-semibold;
+  }
+}
+
+.scanner-beam {
+  position: absolute;
+  left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #8B1538, transparent);
+  animation: scanLine 1.8s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(139,21,56,0.5);
+}
+
+.result-flash-success { animation: flashSuccess 0.5s ease-out forwards; }
+.result-flash-danger  { animation: flashDanger  0.5s ease-out forwards; }
+.result-flash-warning { animation: flashWarning 0.5s ease-out forwards; }
+
+@keyframes flashSuccess { 0% { background-color: rgba(22,163,74,0.15); } 100% { background-color: transparent; } }
+@keyframes flashDanger  { 0% { background-color: rgba(220,38,38,0.15); } 100% { background-color: transparent; } }
+@keyframes flashWarning { 0% { background-color: rgba(217,119,6,0.15);  } 100% { background-color: transparent; } }
+
+.bg-zapotec-texture {
+  background-color: #FAF7F2;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(139,21,56,0.04) 39px, rgba(139,21,56,0.04) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(139,21,56,0.04) 39px, rgba(139,21,56,0.04) 40px);
+}

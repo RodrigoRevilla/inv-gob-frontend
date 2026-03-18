@@ -1,0 +1,92 @@
+import { Injectable } from '@angular/core';
+import * as XLSX from 'xlsx';
+import { Faltante, EscaneoDetalle, ResumenSesion } from '../models';
+
+@Injectable({ providedIn: 'root' })
+export class ExcelService {
+
+  exportarFaltantes(sesion: ResumenSesion, faltantes: Faltante[]): void {
+    const wb = XLSX.utils.book_new();
+    const resumen = [
+      ['ACTA DE VERIFICACIÓN DE INVENTARIO'],
+      [],
+      ['Sesión:', sesion.nombre_sesion],
+      ['Iniciada por:', sesion.iniciado_por],
+      ['Fecha:', new Date(sesion.iniciada_at).toLocaleString('es-MX')],
+      ['Estado:', sesion.estado.toUpperCase()],
+      [],
+      ['RESUMEN DE RESULTADOS'],
+      ['Total en catálogo:', sesion.total_en_catalogo],
+      ['Escaneados:', sesion.total_escaneados],
+      ['Correctos:', sesion.coincidencias],
+      ['Ubicación diferente:', sesion.ubicacion_diferente],
+      ['Sin registro:', sesion.no_en_catalogo],
+      ['Faltantes:', sesion.faltantes],
+      ['Cobertura:', `${sesion.total_en_catalogo > 0 ? Math.round((sesion.total_escaneados / sesion.total_en_catalogo) * 100) : 0}%`],
+    ];
+
+    const wsResumen = XLSX.utils.aoa_to_sheet(resumen);
+    wsResumen['!cols'] = [{ wch: 22 }, { wch: 40 }];
+    XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+
+    // Hoja 2: Faltantes
+    if (faltantes.length > 0) {
+      const encabezados = ['No. Inventario', 'Descripción', 'Clasificación', 'Ubicación Esperada'];
+      const filas = faltantes.map(f => [
+        f.numero_inventario,
+        f.descripcion,
+        f.clasificacion || '',
+        f.ubicacion_esperada || '',
+      ]);
+
+      const wsFaltantes = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
+      wsFaltantes['!cols'] = [{ wch: 18 }, { wch: 40 }, { wch: 22 }, { wch: 30 }];
+      XLSX.utils.book_append_sheet(wb, wsFaltantes, 'Faltantes');
+    }
+
+    const nombre = `faltantes_${sesion.nombre_sesion.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)
+      }.xlsx`;
+    wb.SheetNames = wb.SheetNames.reverse();
+    XLSX.writeFile(wb, nombre);
+  }
+
+  exportarEscaneos(sesion: ResumenSesion, escaneos: EscaneoDetalle[]): void {
+    const wb = XLSX.utils.book_new();
+
+    const etiqueta: Record<string, string> = {
+      coincide: 'Verificado',
+      encontrado: 'Ubicación diferente',
+      no_en_catalogo: 'No en catálogo',
+    };
+
+    const encabezados = [
+      'No. Inventario', 'Descripción', 'Resultado',
+      'Ubicación Esperada', 'Ubicación Escaneada',
+      'Observaciones', 'Escaneado por', 'Hora',
+    ];
+
+    const filas = escaneos.map(e => [
+      e.numero_inv_leido,
+      e.descripcion || '',
+      etiqueta[e.resultado] || e.resultado,
+      e.ubicacion_esperada || '',
+      e.ubicacion_escaneada || '',
+      e.observaciones || '',
+      e.escaneado_por || '',
+      new Date(e.escaneado_at).toLocaleString('es-MX'),
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
+    ws['!cols'] = [
+      { wch: 18 }, { wch: 40 }, { wch: 22 },
+      { wch: 28 }, { wch: 28 }, { wch: 30 },
+      { wch: 25 }, { wch: 22 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, 'Escaneos');
+
+    const nombre = `escaneos_${sesion.nombre_sesion.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)
+      }.xlsx`;
+
+    XLSX.writeFile(wb, nombre);
+  }
+}
