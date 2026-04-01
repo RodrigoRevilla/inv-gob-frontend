@@ -149,6 +149,7 @@ import { ResumenSesion, EscaneoDetalle, Faltante } from '../../models';
               <span>{{ sesion()!.faltantes }} sin verificar</span>
             </div>
           </div>
+
           <div class="card">
             <h3 class="text-sm font-semibold text-guinda-700 mb-4 flex items-center gap-2">
               <svg class="w-4 h-4 text-guinda-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -169,22 +170,24 @@ import { ResumenSesion, EscaneoDetalle, Faltante } from '../../models';
                   {{ sesion()!.iniciada_at | date:'dd/MM/yyyy HH:mm:ss' }}
                 </p>
               </div>
-               @if (sesion()!.cerrada_at) {
-    <div>
-      <span class="text-guinda-400 text-xs uppercase tracking-wider font-semibold">Fecha de cierre</span>
-      <p class="font-mono text-guinda-700 mt-1">
-        {{ sesion()!.cerrada_at | date:'dd/MM/yyyy HH:mm:ss' }}
-      </p>
-    </div>
-    <div>
-      <span class="text-guinda-400 text-xs uppercase tracking-wider font-semibold">Duración</span>
-      <p class="font-mono text-guinda-700 mt-1">{{ duracion() }}</p>
-    </div>
-  }
-</div>
+              @if (sesion()!.cerrada_at) {
+                <div>
+                  <span class="text-guinda-400 text-xs uppercase tracking-wider font-semibold">Fecha de cierre</span>
+                  <p class="font-mono text-guinda-700 mt-1">
+                    {{ sesion()!.cerrada_at | date:'dd/MM/yyyy HH:mm:ss' }}
+                  </p>
+                </div>
+                <div>
+                  <span class="text-guinda-400 text-xs uppercase tracking-wider font-semibold">Duración</span>
+                  <p class="font-mono text-guinda-700 mt-1">{{ duracion() }}</p>
+                </div>
+              }
             </div>
+          </div>
 
           <div class="grid lg:grid-cols-2 gap-6">
+
+            <!-- Faltantes -->
             <div #seccionFaltantes
                  id="faltantes"
                  class="card transition-all duration-500"
@@ -236,7 +239,18 @@ import { ResumenSesion, EscaneoDetalle, Faltante } from '../../models';
                                 border border-danger-border/60">
                       <div class="flex-1 min-w-0">
                         <div class="inv-number">{{ f.numero_inventario }}</div>
-                        <div class="text-xs text-guinda-600 truncate mt-0.5">{{ f.descripcion }}</div>
+                        <div class="text-xs text-guinda-700 font-medium truncate mt-0.5">{{ f.descripcion }}</div>
+                        @if (f.marca || f.modelo) {
+                          <div class="text-xs text-guinda-500 truncate">
+                            {{ f.marca }}{{ f.marca && f.modelo ? ' · ' : '' }}{{ f.modelo }}
+                          </div>
+                        }
+                        @if (f.numero_serie) {
+                          <div class="text-xs text-guinda-400 font-mono">Serie: {{ f.numero_serie }}</div>
+                        }
+                        @if (f.resguardo) {
+                          <div class="text-xs text-guinda-400">Resguardo: {{ f.resguardo }}</div>
+                        }
                         @if (f.ubicacion_esperada) {
                           <div class="text-xs text-guinda-400 mt-0.5 font-mono">{{ f.ubicacion_esperada }}</div>
                         }
@@ -247,6 +261,7 @@ import { ResumenSesion, EscaneoDetalle, Faltante } from '../../models';
               }
             </div>
 
+            <!-- Escaneos -->
             <div #seccionEscaneos
                  id="movidos"
                  class="card transition-all duration-500"
@@ -314,7 +329,12 @@ import { ResumenSesion, EscaneoDetalle, Faltante } from '../../models';
                     <div class="flex-1 min-w-0">
                       <div class="font-mono text-xs text-guinda-700 font-semibold truncate">{{ e.numero_inv_leido }}</div>
                       @if (e.descripcion) {
-                        <div class="text-xs text-guinda-400 truncate">{{ e.descripcion }}</div>
+                        <div class="text-xs text-guinda-500 truncate">{{ e.descripcion }}</div>
+                      }
+                      @if (e.marca || e.modelo) {
+                        <div class="text-xs text-guinda-400 truncate">
+                          {{ e.marca }}{{ e.marca && e.modelo ? ' · ' : '' }}{{ e.modelo }}
+                        </div>
                       }
                       @if (e.resultado === 'encontrado' && e.ubicacion_esperada) {
                         <div class="text-xs text-warning-DEFAULT mt-0.5 font-mono">
@@ -352,26 +372,26 @@ import { ResumenSesion, EscaneoDetalle, Faltante } from '../../models';
 })
 export class SesionComponent implements OnInit, AfterViewInit {
   @ViewChild('seccionFaltantes') seccionFaltantesRef!: ElementRef;
-  @ViewChild('seccionEscaneos') seccionEscaneoRef!: ElementRef;
+  @ViewChild('seccionEscaneos')  seccionEscaneoRef!: ElementRef;
 
-  sesion = signal<ResumenSesion | null>(null);
-  escaneos = signal<EscaneoDetalle[]>([]);
+  sesion    = signal<ResumenSesion | null>(null);
+  escaneos  = signal<EscaneoDetalle[]>([]);
   faltantes = signal<Faltante[]>([]);
-  cargando = signal(true);
+  cargando  = signal(true);
   seccionResaltada = signal('');
-  filtroEscaneo = signal('');
+  filtroEscaneo    = signal('');
   year = new Date().getFullYear();
 
   private fragmentDestino = '';
 
   constructor(
     private route: ActivatedRoute,
-    public router: Router,
+    public  router: Router,
     private api: ApiService,
     private auth: AuthService,
     private excel: ExcelService,
     private cdr: ChangeDetectorRef,
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.fragmentDestino = this.route.snapshot.fragment ?? '';
@@ -379,9 +399,7 @@ export class SesionComponent implements OnInit, AfterViewInit {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.api.obtenerSesion(id).subscribe(s => {
       this.sesion.set(s); this.cargando.set(false); this.cdr.detectChanges();
-      if (this.fragmentDestino) {
-        setTimeout(() => this.aplicarFragment(), 400);
-      }
+      if (this.fragmentDestino) setTimeout(() => this.aplicarFragment(), 400);
     });
     this.api.listarEscaneos(id).subscribe(d => {
       this.escaneos.set(d); this.cdr.detectChanges();
@@ -400,20 +418,12 @@ export class SesionComponent implements OnInit, AfterViewInit {
   private aplicarFragment() {
     const f = this.fragmentDestino;
     if (!f) return;
-
     this.seccionResaltada.set(f);
-
     if (f === 'movidos') this.filtroEscaneo.set('encontrado');
     if (f === 'sin-registro') this.filtroEscaneo.set('no_en_catalogo');
-
     const ref = (f === 'faltantes') ? this.seccionFaltantesRef : this.seccionEscaneoRef;
     ref?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    setTimeout(() => {
-      this.seccionResaltada.set('');
-      this.cdr.detectChanges();
-    }, 4000);
-
+    setTimeout(() => { this.seccionResaltada.set(''); this.cdr.detectChanges(); }, 4000);
     this.cdr.detectChanges();
   }
 
@@ -422,10 +432,8 @@ export class SesionComponent implements OnInit, AfterViewInit {
     if (seccion === 'movidos') this.filtroEscaneo.set('encontrado');
     else if (seccion === 'sin-registro') this.filtroEscaneo.set('no_en_catalogo');
     else if (seccion === 'faltantes') this.filtroEscaneo.set('');
-
     const ref = seccion === 'faltantes' ? this.seccionFaltantesRef : this.seccionEscaneoRef;
     ref?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     setTimeout(() => { this.seccionResaltada.set(''); this.cdr.detectChanges(); }, 4000);
     this.cdr.detectChanges();
   }
@@ -454,8 +462,8 @@ export class SesionComponent implements OnInit, AfterViewInit {
     const s = this.sesion();
     if (!s?.cerrada_at || !s?.iniciada_at) return '—';
     const diff = new Date(s.cerrada_at).getTime() - new Date(s.iniciada_at).getTime();
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
+    const h   = Math.floor(diff / 3600000);
+    const m   = Math.floor((diff % 3600000) / 60000);
     const seg = Math.floor((diff % 60000) / 1000);
     return `${h > 0 ? h + 'h ' : ''}${m}m ${seg}s`;
   }

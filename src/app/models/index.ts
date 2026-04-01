@@ -43,7 +43,7 @@ export interface ResumenSesion {
   no_en_catalogo: number;
   faltantes: number;
   version_catalogo: number;
-  cerrada_at: string | null; 
+  cerrada_at: string | null;
 }
 
 export interface EscaneoRequest {
@@ -60,6 +60,10 @@ export interface EscaneoResponse {
   resultado: ResultadoEscaneo;
   numero_inv_leido: string;
   descripcion: string;
+  numero_serie: string;
+  marca: string;
+  modelo: string;
+  resguardo: string;
   ubicacion_esperada: string;
   ubicacion_escaneada: string;
   mensaje: string;
@@ -71,6 +75,10 @@ export interface EscaneoDetalle {
   resultado: ResultadoEscaneo;
   numero_inv_leido: string;
   descripcion: string;
+  numero_serie: string;
+  marca: string;
+  modelo: string;
+  resguardo: string;
   ubicacion_esperada: string;
   ubicacion_escaneada: string;
   observaciones: string;
@@ -81,15 +89,23 @@ export interface EscaneoDetalle {
 export interface Bien {
   id: string;
   numero_inventario: string;
+  numero_serie: string;
   descripcion: string;
+  marca: string;
+  modelo: string;
   clasificacion: string;
   ubicacion_esperada: string;
+  resguardo: string;
   estado: string;
 }
 
 export interface Faltante {
   numero_inventario: string;
+  numero_serie: string;
   descripcion: string;
+  marca: string;
+  modelo: string;
   ubicacion_esperada: string;
+  resguardo: string;
   clasificacion: string;
 }

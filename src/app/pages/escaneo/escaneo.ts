@@ -290,7 +290,32 @@ import { EscaneoResponse, ResumenSesion, ResultadoEscaneo } from '../../models';
                       </span>
                     </div>
                     @if (ultimoResultado()!.descripcion) {
-                      <p class="text-sm text-guinda-700 truncate">{{ ultimoResultado()!.descripcion }}</p>
+                      <p class="text-sm text-guinda-700 font-medium">{{ ultimoResultado()!.descripcion }}</p>
+                    }
+                    <!-- Marca, Modelo y No. Serie -->
+                    @if (ultimoResultado()!.marca || ultimoResultado()!.modelo || ultimoResultado()!.numero_serie) {
+                      <div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                        @if (ultimoResultado()!.marca) {
+                          <span class="text-xs text-guinda-500">
+                            <span class="text-guinda-300">Marca:</span> {{ ultimoResultado()!.marca }}
+                          </span>
+                        }
+                        @if (ultimoResultado()!.modelo) {
+                          <span class="text-xs text-guinda-500">
+                            <span class="text-guinda-300">Modelo:</span> {{ ultimoResultado()!.modelo }}
+                          </span>
+                        }
+                        @if (ultimoResultado()!.numero_serie) {
+                          <span class="text-xs text-guinda-500 font-mono">
+                            <span class="text-guinda-300">Serie:</span> {{ ultimoResultado()!.numero_serie }}
+                          </span>
+                        }
+                      </div>
+                    }
+                    @if (ultimoResultado()!.resguardo) {
+                      <p class="text-xs text-guinda-400 mt-0.5">
+                        <span class="text-guinda-300">Resguardo:</span> {{ ultimoResultado()!.resguardo }}
+                      </p>
                     }
                     <p class="text-xs text-guinda-400 mt-0.5">{{ ultimoResultado()!.mensaje }}</p>
                     @if (ultimoResultado()!.resultado === 'encontrado' && ultimoResultado()!.ubicacion_esperada) {
@@ -327,7 +352,12 @@ import { EscaneoResponse, ResumenSesion, ResultadoEscaneo } from '../../models';
                   <div class="flex-1 min-w-0">
                     <div class="font-mono text-xs text-guinda-700 truncate font-semibold">{{ e.numero_inv_leido }}</div>
                     @if (e.descripcion) {
-                      <div class="text-xs text-guinda-400 truncate">{{ e.descripcion }}</div>
+                      <div class="text-xs text-guinda-500 truncate">{{ e.descripcion }}</div>
+                    }
+                    @if (e.marca || e.modelo) {
+                      <div class="text-xs text-guinda-400 truncate">
+                        {{ e.marca }}{{ e.marca && e.modelo ? ' · ' : '' }}{{ e.modelo }}
+                      </div>
                     }
                     @if (e.observaciones) {
                       <div class="text-xs text-guinda-300 truncate italic">{{ e.observaciones }}</div>

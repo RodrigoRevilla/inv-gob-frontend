@@ -7,6 +7,7 @@ export class ExcelService {
 
   exportarFaltantes(sesion: ResumenSesion, faltantes: Faltante[]): void {
     const wb = XLSX.utils.book_new();
+
     const resumen = [
       ['ACTA DE VERIFICACIÓN DE INVENTARIO'],
       [],
@@ -29,23 +30,33 @@ export class ExcelService {
     wsResumen['!cols'] = [{ wch: 22 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
 
-    // Hoja 2: Faltantes
     if (faltantes.length > 0) {
-      const encabezados = ['No. Inventario', 'Descripción', 'Clasificación', 'Ubicación Esperada'];
+      const encabezados = [
+        'No. Inventario', 'No. Serie', 'Descripción',
+        'Marca', 'Modelo', 'Clasificación',
+        'Ubicación Esperada', 'Resguardo',
+      ];
       const filas = faltantes.map(f => [
         f.numero_inventario,
+        f.numero_serie       || '',
         f.descripcion,
-        f.clasificacion || '',
+        f.marca              || '',
+        f.modelo             || '',
+        f.clasificacion      || '',
         f.ubicacion_esperada || '',
+        f.resguardo          || '',
       ]);
 
       const wsFaltantes = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
-      wsFaltantes['!cols'] = [{ wch: 18 }, { wch: 40 }, { wch: 22 }, { wch: 30 }];
+      wsFaltantes['!cols'] = [
+        { wch: 20 }, { wch: 22 }, { wch: 40 },
+        { wch: 16 }, { wch: 20 }, { wch: 22 },
+        { wch: 30 }, { wch: 25 },
+      ];
       XLSX.utils.book_append_sheet(wb, wsFaltantes, 'Faltantes');
     }
 
-    const nombre = `faltantes_${sesion.nombre_sesion.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)
-      }.xlsx`;
+    const nombre = `faltantes_${sesion.nombre_sesion.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
     wb.SheetNames = wb.SheetNames.reverse();
     XLSX.writeFile(wb, nombre);
   }
@@ -54,39 +65,44 @@ export class ExcelService {
     const wb = XLSX.utils.book_new();
 
     const etiqueta: Record<string, string> = {
-      coincide: 'Verificado',
-      encontrado: 'Ubicación diferente',
-      no_en_catalogo: 'No en catálogo',
+      coincide:        'Verificado',
+      encontrado:      'Ubicación diferente',
+      no_en_catalogo:  'No en catálogo',
     };
 
     const encabezados = [
-      'No. Inventario', 'Descripción', 'Resultado',
+      'No. Inventario', 'No. Serie', 'Descripción',
+      'Marca', 'Modelo', 'Resultado',
       'Ubicación Esperada', 'Ubicación Escaneada',
-      'Observaciones', 'Escaneado por', 'Hora',
+      'Resguardo', 'Observaciones',
+      'Escaneado por', 'Hora',
     ];
 
     const filas = escaneos.map(e => [
       e.numero_inv_leido,
-      e.descripcion || '',
+      e.numero_serie       || '',
+      e.descripcion        || '',
+      e.marca              || '',
+      e.modelo             || '',
       etiqueta[e.resultado] || e.resultado,
-      e.ubicacion_esperada || '',
+      e.ubicacion_esperada  || '',
       e.ubicacion_escaneada || '',
-      e.observaciones || '',
-      e.escaneado_por || '',
+      e.resguardo           || '',
+      e.observaciones       || '',
+      e.escaneado_por       || '',
       new Date(e.escaneado_at).toLocaleString('es-MX'),
     ]);
 
     const ws = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
     ws['!cols'] = [
-      { wch: 18 }, { wch: 40 }, { wch: 22 },
-      { wch: 28 }, { wch: 28 }, { wch: 30 },
-      { wch: 25 }, { wch: 22 },
+      { wch: 20 }, { wch: 22 }, { wch: 40 },
+      { wch: 16 }, { wch: 20 }, { wch: 22 },
+      { wch: 28 }, { wch: 28 }, { wch: 25 },
+      { wch: 30 }, { wch: 25 }, { wch: 22 },
     ];
     XLSX.utils.book_append_sheet(wb, ws, 'Escaneos');
 
-    const nombre = `escaneos_${sesion.nombre_sesion.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)
-      }.xlsx`;
-
+    const nombre = `escaneos_${sesion.nombre_sesion.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
     XLSX.writeFile(wb, nombre);
   }
 }
