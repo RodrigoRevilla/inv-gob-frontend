@@ -556,7 +556,6 @@ export class ImportadorCatalogoComponent {
       if (!num) { return; }
       if (!desc) { errores.push({ fila: i + 2, error: `Descripción vacía (${num})` }); return; }
 
-      // Renombrar valores sin número real
       const sinNumero = ['sin sicipo', 'no aplica', 'no inventariado', 'sin inventariar', 'sin inventario'];
       const numLower = num.toLowerCase().trim();
       if (sinNumero.includes(numLower)) {
@@ -565,7 +564,6 @@ export class ImportadorCatalogoComponent {
         num = `${clave}-${String(contadorSinSicipo[clave]).padStart(3, '0')}`;
       }
 
-      // Deduplicar
       const key = num.toUpperCase();
       if (vistos.has(key)) {
         errores.push({ fila: i + 2, error: `Número de inventario duplicado: "${num}"` });
